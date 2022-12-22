@@ -1,0 +1,154 @@
+package zadanie5;
+
+import java.awt.event.MouseEvent;
+import java.util.Iterator;
+
+import sk.upjs.jpaz2.*;
+
+public class KorytnaciSvet extends WinPane {
+	/**
+	 * Referencia na pole korytnaciek
+	 */
+	private Turtle[] korytnacky = null;
+
+	/**
+	 * Inicializacna metoda (konstruktor)
+	 */
+	public KorytnaciSvet() {
+		this.korytnacky = new Turtle[0];
+	}
+
+	/**
+	 * Metoda na pridanie korytnacky na zadanych suradniciach
+	 */
+	public void pridajKorytnacku(int x, int y) {
+		Turtle novaKorytnacka = new Turtle();
+		this.add(novaKorytnacka);
+		novaKorytnacka.setPosition(x, y);
+
+		Turtle[] noveKorytnacky = new Turtle[this.korytnacky.length + 1];
+		System.arraycopy(this.korytnacky, 0, noveKorytnacky, 0, this.korytnacky.length);
+		noveKorytnacky[noveKorytnacky.length - 1] = novaKorytnacka;
+
+		this.korytnacky = noveKorytnacky;
+	}
+
+	@Override
+	protected void onMouseClicked(int x, int y, MouseEvent detail) {
+		if (!(detail.isAltDown() || detail.isControlDown() || detail.isShiftDown())) {
+			this.pridajKorytnacku(x, y);
+		}
+	}
+
+	/**
+	 * Nakresli ciary ku tazisku
+	 */
+	public void vystrelNaTazisko() {
+		// suradnice taziska
+		double taziskoX = 0;
+		double taziskoY = 0;
+
+		// pomocna premenna sucet pre vypocet suctu X suradnice kazdej korytnacky
+		double sucetX = 0;
+		double sucetY = 0;
+
+		// sucet x y suradnic kazdej korytnacky
+		for (int i = 0; i < korytnacky.length; i++) {
+			sucetX = sucetX + korytnacky[i].getX();
+			sucetY = sucetY + korytnacky[i].getY();
+		}
+
+		// vypocet taziska -> priemer
+		taziskoX = sucetX / korytnacky.length;
+		taziskoY = sucetY / korytnacky.length;
+
+		// nakresli ciaru a vrat ju na miesto
+		for (int i = 0; i < korytnacky.length; i++) {
+			double startX = korytnacky[i].getX();
+			double startY = korytnacky[i].getY();
+
+			korytnacky[i].moveTo(taziskoX, taziskoY);
+			korytnacky[i].setPosition(startX, startY);
+			korytnacky[i].setDirection(0);
+		}
+	}
+
+	/**
+	 * 
+	 * @param x    suradnica x bomby
+	 * @param y    suradnica y bomby
+	 * @param sila vybuchu
+	 * 
+	 * @return ako daleko sa posunula korytnacka ktora bola najblizsie pri bombe
+	 *         hihi
+	 */
+	public double explozia(double x, double y, double sila) {
+
+		// ak sa nahodou sila bude rovnat 0
+		if (sila == 0)
+			return 0;
+
+		double najvacsiPosun = 0;
+
+		for (int i = 0; i < korytnacky.length; i++) {
+			double vzdialenostOdBomby = korytnacky[i].distanceTo(x, y);
+
+			// nastav korytnacku do smeru bomby
+			korytnacky[i].setDirection(korytnacky[i].directionTowards(x, y));
+			// otoc korytnacku od bomby
+			korytnacky[i].turn(180);
+
+			// vypocet posunu od bomby
+			double posun = Math.pow(sila, 2) / Math.pow(vzdialenostOdBomby, 4);
+
+			korytnacky[i].penUp();
+			korytnacky[i].step(posun);
+			korytnacky[i].penDown();
+
+			// ak je posun vacsi ako niektory z predchadzajucich uloz posun
+			if (najvacsiPosun < posun)
+				najvacsiPosun = posun;
+
+		}
+
+		return najvacsiPosun;
+	}
+
+	public double casDoPrichodu(double x, double y) {
+		double najmensiCasPrichodu = 0;
+
+		for (int i = 0; i < korytnacky.length; i++) {
+
+			double sekundy = 0;
+
+			double uholNatocenia = korytnacky[i].getDirection();
+
+			double uholKBodu = korytnacky[i].directionTowards(x, y);
+
+			double rozdiel = Math.abs(uholKBodu - uholNatocenia);
+
+			if (rozdiel > 180) {
+				sekundy = 360 - rozdiel;
+				korytnacky[i].turn(-rozdiel);
+			} else {
+				sekundy = rozdiel;
+				korytnacky[i].turn(rozdiel);
+			}
+
+			double vzdialenostKBodu = korytnacky[i].distanceTo(x, y);
+
+			korytnacky[i].step(vzdialenostKBodu);
+
+			sekundy = sekundy + vzdialenostKBodu;
+
+			if (i == 0) {
+				najmensiCasPrichodu = sekundy;
+			} else {
+				if (najmensiCasPrichodu > sekundy)
+					najmensiCasPrichodu = sekundy;
+			}
+		}
+
+		return najmensiCasPrichodu;
+	}
+}

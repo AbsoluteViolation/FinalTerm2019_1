@@ -1,0 +1,303 @@
+package zadanie8;
+
+import java.lang.reflect.Array;
+import java.util.*;
+
+public class ZoznamOdberov {
+
+	/**
+	 * List reprezentujuci zoznam odberov
+	 */
+	private List odbery;
+
+	/**
+	 * Konstruktor zoznamu odberov vytvori prazdny ArrayList
+	 */
+	public ZoznamOdberov() {
+		odbery = new ArrayList();
+	}
+
+	/**
+	 * Pridavanie odberu do list-u
+	 * 
+	 * @param o
+	 */
+	public void pridaj(Odber o) {
+		odbery.add(o);
+	}
+
+	/**
+	 * Metoda vrati, kolko odberov sa vykonalo na odbernom mieste zdanom parametrom
+	 * 
+	 * @param odberneMiesto cislo odberneho miesta
+	 * @return pocet odberov, ktore sa vykonali na odbernom mieste odberneMiesto
+	 */
+	public int pocetOdberovNaMieste(int odberneMiesto) {
+		// ??? (1 bod)
+		int sum = 0;
+		/*
+		 * for (int i = 0; i < odbery.size(); i++) {
+		 * 
+		 * Odber o = (Odber) this.odbery.get(i);
+		 * 
+		 * if (odberneMiesto == o.getOdberneMiesto()) { sum++; }
+		 * 
+		 * }
+		 */
+
+		for (Object object : odbery) {
+			if (object instanceof Odber) {
+				Odber o = (Odber) object;
+
+				if (odberneMiesto == o.getOdberneMiesto()) {
+					sum++;
+				}
+			}
+		}
+
+		return sum;
+	}
+
+	/**
+	 * Metoda vrati zoznam mien pozitivne testovanych. Mena sa nenachadzaju na
+	 * zozname dupliticne
+	 * 
+	 * @return zoznam mien pozitivne testovanych, bez duplicit
+	 */
+	public List pozitivneTestovani() {
+		// ??? (1 bod)
+		// hint: Set
+
+		Set<String> mena = new HashSet<String>();
+
+		for (Object object : odbery) {
+			if (object instanceof Odber) {
+				Odber o = (Odber) object;
+
+				if (o.getVysledok()) {
+					mena.add(o.getMenoZamestnanca());
+				}
+			}
+
+		}
+
+		/*
+		 * for (int i = 0; i < odbery.size(); i++) {
+		 * 
+		 * Odber o = (Odber) this.odbery.get(i);
+		 * 
+		 * if(o.getVysledok()) { mena.add(o.getMenoZamestnanca()); }
+		 * 
+		 * }
+		 */
+
+		ArrayList<String> vsetci = new ArrayList<>();
+
+		vsetci.addAll(mena);
+
+		return vsetci;
+	}
+
+	/**
+	 * Metoda vrati priemerny pocet testovanych za den testovania. Ak testujeme v
+	 * pondelok 30.11. a piatok 4.12., tak sú to dva dni, pocas ktorych sa
+	 * testovalo.
+	 * 
+	 * @return priemerny pocet testovanych za den testovania
+	 */
+	public double priemernyPocetTestovZaDenTestovania() {
+		// ??? (1 bod)
+		Map<String, Integer> m = new HashMap<>();
+
+		for (Object object : odbery) {
+			if (object instanceof Odber) {
+				Odber o = (Odber) object;
+
+				if (!m.containsKey(o.getDatumOdberu())) {
+					m.put(o.getDatumOdberu(), 1);
+				} else {
+					m.put(o.getDatumOdberu(), m.get(o.getDatumOdberu()) + 1);
+				}
+			}
+		}
+
+		int pocetDni = m.keySet().size();
+
+		return (double) (odbery.size() / pocetDni);
+	}
+
+	/**
+	 * Metoda vrati zoznam mien vsetkych testovanych, ktori sa zucastnili odberu v
+	 * rozmedzi datumov. Mena sa nenachadzaju na zozname dupliticne
+	 * 
+	 * @param odDatum datum zaciatku, vratane tohto datumu
+	 * @param doDatum datum konca, vratane tohto datumu
+	 * @return mena testovanych v rozmedzi datumov
+	 */
+	public List testovaniOdDo(String odDatum, String doDatum) {
+		// ??? (1 bod)
+		// hint: Pre jednoduchost nepouzivajte triedu Date, ale odporucame datumy
+		// prerobit na cislo a pracovat s cislami
+		// napr. ak je odDatum "30.11.2020" a doDatum "4.12.2020" a zaujima nas, ci
+		// "1.12.2020"
+		// je medzi tymito datumami, tak ich prerobime na cisla, 20201130, 20201204,
+		// 20201201
+		// a zistujeme, ci plati 20201130 <= 20201201 a zaroven 20201201 <= 20201204
+		// pozn.: ak chcete znak '.' (bodka) zapisat ako delimiter pre scanner alebo v
+		// metode split, tak ju zapisujeme ako "\\." lebo ide o specialny znak
+		// pozn.: pri vstupe vzdy plati, ze odDatum <= doDatum
+
+		ArrayList<String> vsetkyMena = new ArrayList<>();
+
+		for (Object object : odbery) {
+			if (object instanceof Odber) {
+				Odber o = (Odber) object;
+
+				int datum = datumAkoCislo(o.getDatumOdberu());
+
+				if (datum >= datumAkoCislo(odDatum) && datum <= datumAkoCislo(doDatum)) {
+
+					if (!vsetkyMena.contains(o.getMenoZamestnanca()))
+						vsetkyMena.add(o.getMenoZamestnanca());
+				}
+
+			}
+		}
+
+		return vsetkyMena;
+	}
+
+	// pomocna metoda pre prehodenie datumu
+	private int datumAkoCislo(String s) {
+
+		String[] denMesiacRok = s.split("\\.");
+
+		if (denMesiacRok[1].length() == 1)
+			denMesiacRok[1] = "0" + denMesiacRok[1];
+
+		if (denMesiacRok[0].length() == 1)
+			denMesiacRok[0] = "0" + denMesiacRok[0];
+
+		String result = denMesiacRok[2] + denMesiacRok[1] + denMesiacRok[0];
+
+		int datumAkoCislo = Integer.parseInt(result);
+
+		return datumAkoCislo;
+	}
+
+	/**
+	 * Metoda vrati mapu, kde je kazdemu menu priradene kolko testov absolvoval
+	 * 
+	 * @return mapa osob a ich poctu absolvovanych testov
+	 */
+	public Map pocetTestovOsoby() {
+		Map<String, Integer> m = new HashMap<>();
+
+		for (Object object : odbery) {
+			if (object instanceof Odber) {
+				Odber o = (Odber) object;
+
+				if (!m.containsKey(o.getMenoZamestnanca())) {
+					m.put(o.getMenoZamestnanca(), 1);
+				} else {
+					m.put(o.getMenoZamestnanca(), m.get(o.getMenoZamestnanca()) + 1);
+				}
+			}
+		}
+		return m;
+	}
+
+	/**
+	 * Metoda vrati zoznam mien pozitivne testovanych, ktori mali aspon 2 pozitivne
+	 * testy. Mena sa nenachadzaju na zozname dupliticne.
+	 * 
+	 * @return zoznam mien tych, ktori boli pozitivne testovani aspon dvakrat, bez
+	 *         duplicity mien
+	 */
+	public List opakovanePozitivny() {
+		
+		ArrayList<String> opakovanePozitivny = new ArrayList<>();
+		Map<String, Integer> m = pocetTestovOsoby();
+		
+		for (String kluc : m.keySet()) {
+			if(m.get(kluc) >= 2) {
+				opakovanePozitivny.add(kluc);
+			}
+		}
+		
+		return opakovanePozitivny;
+	}
+
+	/**
+	 * Metoda vrati, ci zamestnanec prekonal nakazu. To znamena, ze mal pozitivny
+	 * test v nejaky den a negativny neskor.
+	 * 
+	 * @param menoZamestnanca
+	 * @return
+	 */
+	public boolean prekonalNakazu(String menoZamestnanca) {
+		// ??? (1 bod)
+		// hint je pri metoda testovanyOdDo
+		
+		Collections.sort(odbery);
+		
+		for (Object object : odbery) {
+			if (object instanceof Odber) {
+				Odber o = (Odber) object;
+				System.out.println(o.getDatumOdberu());
+			}
+		}
+		
+		
+		return false;
+	}
+	
+	public class SortItems implements Comparator<Odber>{
+
+		@Override
+		public int compare(Odber o1, Odber o2) {
+			
+			return o1.getDatumOdberu().compareTo(o2.getDatumOdberu());
+		}
+		
+	}
+	
+	
+	/**
+	 * Metoda vrati zoznam tych mien z vyberu zamestnancov, ktori este neabsolvovali
+	 * ziaden odber.
+	 * 
+	 * @param vyberZamestnancov
+	 * @return novy zoznam vytvoreny zo zoznamu vyberZamestancov, bez zamestancov,
+	 *         ktori uz absolvovali odber
+	 */
+	public List bezOdberu(List vyberZamestnancov) {
+		// ??? (1 bod)
+		return null;
+	}
+
+	/**
+	 * Metoda vrati zoznam mien zamestnancov, ktori mali pocas toho isteho dna
+	 * pozitivny aj negativny test. Mena sa nenachadzaju na zozname dupliticne.
+	 * 
+	 * @return zoznam mien tych, ktori pocas jedneho dna mali pozitivny aj negativny
+	 *         test
+	 */
+	public List podozrivoTestovani() {
+		// ??? (1 bod)
+		// hint: vyuzite dvojicu menoZamestnanca datumOdberu
+		return null;
+	}
+
+	/**
+	 * Metoda vrati cislo odberneho miesta, kde sa vykonalo najviac odberov. Ak je
+	 * takychto pracovisk viac, tak vrati ktorekolvek z nich.
+	 * 
+	 * @return cislo pracoviska, ktore vykonalo najviac odberov
+	 */
+	public int najvytazenejsiePracovisko() {
+		// ??? (1 bod)
+		return 0;
+	}
+
+}

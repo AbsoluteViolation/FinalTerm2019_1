@@ -1,0 +1,15 @@
+public void etairm(int a, double b, double c, double[] d, char e) {
+    e = (char) (e + a);
+    while (c > b) {
+        double zgtpy = b;
+        for (int i = 0; i < Math.min(a, d.length); i++) {
+            zgtpy = zgtpy + d[i];
+        }
+        if (zgtpy % 3 == 0) {
+            System.out.println(Arrays.toString(d) + " " + zgtpy + " " + c);
+            break;
+        }
+        c = 2 * c;
+        b++;
+    }
+}
